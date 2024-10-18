@@ -8,7 +8,7 @@ const nextConfig = {
           headers: [
             {
               key: 'Content-Security-Policy',
-              value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org; frame-src https://oauth.telegram.org;"
+              value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org; frame-src https://oauth.telegram.org; connect-src 'self' https://oauth.telegram.org;"
             }
           ]
         }
