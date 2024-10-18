@@ -19,13 +19,25 @@ export default function Dashboard() {
     description: '',
     type: 'expense'
   });
-
-  const monthlyBalance = calculateMonthlyBalance();
-  const { remainingPayments, remainingAmount } = calculateRemainingLoanPayments();
+  const [isUtilityMonth, setIsUtilityMonth] = useState(false);
+  const [additionalIncome, setAdditionalIncome] = useState(0);
+  const [additionalExpenses, setAdditionalExpenses] = useState(0);
+  const [monthlyBalance, setMonthlyBalance] = useState(0);
 
   useEffect(() => {
     fetchTransactions();
   }, []);
+
+  useEffect(() => {
+    const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const expenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    setAdditionalIncome(income);
+    setAdditionalExpenses(expenses);
+  }, [transactions]);
+
+  useEffect(() => {
+    setMonthlyBalance(calculateMonthlyBalance(additionalIncome, additionalExpenses, isUtilityMonth));
+  }, [additionalIncome, additionalExpenses, isUtilityMonth]);
 
   const fetchTransactions = async () => {
     const res = await fetch('/api/transactions');
@@ -60,6 +72,9 @@ export default function Dashboard() {
       });
     }
   };
+
+  const { remainingPayments, remainingAmount } = calculateRemainingLoanPayments();
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4">
       <div className="max-w-6xl mx-auto">
@@ -79,24 +94,32 @@ export default function Dashboard() {
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-medium mb-2 text-blue-200">Monthly Salary</h3>
                 <p className="text-2xl font-bold">€{personalFinanceConfig.income.monthlySalary}</p>
+                <p className="text-sm text-gray-400">Additional Income: €{additionalIncome}</p>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-medium mb-2 text-blue-200">Monthly Expenses</h3>
-                <p className="text-2xl font-bold">€{personalFinanceConfig.expenses.rent + personalFinanceConfig.expenses.utilities}</p>
-                <p className="text-sm text-gray-400">Rent: €{personalFinanceConfig.expenses.rent}</p>
-                <p className="text-sm text-gray-400">Utilities: €{personalFinanceConfig.expenses.utilities}</p>
+                <p className="text-2xl font-bold">€{isUtilityMonth ? personalFinanceConfig.expenses.rentWithUtilities : personalFinanceConfig.expenses.rentWithoutUtilities}</p>
+                <p className="text-sm text-gray-400">Rent: €{personalFinanceConfig.expenses.rentWithoutUtilities}</p>
+                <p className="text-sm text-gray-400">Utilities (if applicable): €{personalFinanceConfig.expenses.utilitiesBimonthly}</p>
+                <p className="text-sm text-gray-400">Additional Expenses: €{additionalExpenses}</p>
+                <div className="mt-2">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={isUtilityMonth}
+                      onChange={(e) => setIsUtilityMonth(e.target.checked)}
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                    />
+                    <span className="ml-2 text-sm text-gray-400">Utility month?</span>
+                  </label>
+                </div>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-medium mb-2 text-blue-200">Monthly Balance</h3>
                 <p className={`text-2xl font-bold ${monthlyBalance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  €{monthlyBalance}
+                  €{monthlyBalance.toFixed(2)}
                 </p>
               </div>
-            </div>
-            <div className="mt-4 bg-gray-700 p-4 rounded-lg">
-              <h3 className="text-lg font-medium mb-2 text-blue-200">Additional Info</h3>
-              <p>Credit Cards: {personalFinanceConfig.creditCards}</p>
-              <p>Dependents: {personalFinanceConfig.dependents} (spouse)</p>
             </div>
           </div>
 

@@ -2,25 +2,24 @@ export const personalFinanceConfig = {
     loan: {
       amount: 29529,
       monthlyPayment: 400,
-      totalTermMonths: 74  // Assuming this is a 6-year loan (72 months) plus 2 months already paid
+      totalTermMonths: 74
     },
     income: {
       monthlySalary: 3400
     },
     expenses: {
-      rent: 1300,
-      utilities: 500
+      rentWithoutUtilities: 1300,
+      rentWithUtilities: 1800,
+      utilitiesBimonthly: 500
     },
     creditCards: 2,
     dependents: 1 // wife
   };
   
-  export const calculateMonthlyBalance = () => {
-    const totalIncome = personalFinanceConfig.income.monthlySalary;
-    const totalExpenses = 
-      personalFinanceConfig.expenses.rent + 
-      personalFinanceConfig.expenses.utilities + 
-      personalFinanceConfig.loan.monthlyPayment;
+  export const calculateMonthlyBalance = (additionalIncome: number, additionalExpenses: number, isUtilityMonth: boolean) => {
+    const totalIncome = personalFinanceConfig.income.monthlySalary + additionalIncome;
+    const rent = isUtilityMonth ? personalFinanceConfig.expenses.rentWithUtilities : personalFinanceConfig.expenses.rentWithoutUtilities;
+    const totalExpenses = rent + personalFinanceConfig.loan.monthlyPayment + additionalExpenses;
     
     return totalIncome - totalExpenses;
   };
