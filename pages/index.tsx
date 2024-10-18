@@ -12,13 +12,19 @@ declare global {
 const Home = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [debugInfo, setDebugInfo] = useState('Initializing...');
-  const NEXT_PUBLIC_TELEGRAM_BOT_NAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME
 
   useEffect(() => {
     setDebugInfo('Loading Telegram script...');
     const script = document.createElement('script');
     script.src = 'https://telegram.org/js/telegram-widget.js?22';
-    script.setAttribute('data-telegram-login', NEXT_PUBLIC_TELEGRAM_BOT_NAME);
+    
+    const botName = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME;
+    if (!botName) {
+      setDebugInfo('Error: Telegram bot name not set in environment variables.');
+      return;
+    }
+    
+    script.setAttribute('data-telegram-login', botName);
     script.setAttribute('data-size', 'large');
     script.setAttribute('data-onauth', 'onTelegramAuth(user)');
     script.setAttribute('data-request-access', 'write');
