@@ -24,6 +24,7 @@ const Home = () => {
       return;
     }
     
+    setDebugInfo(`Setting up Telegram widget for bot: ${botName}`);
     script.setAttribute('data-telegram-login', botName);
     script.setAttribute('data-size', 'large');
     script.setAttribute('data-onauth', 'onTelegramAuth(user)');
@@ -31,16 +32,16 @@ const Home = () => {
     document.body.appendChild(script);
 
     script.onload = () => {
-      setDebugInfo('Telegram script loaded.');
+      setDebugInfo('Telegram script loaded. Waiting for user interaction...');
     };
 
-    script.onerror = () => {
-      setDebugInfo('Error loading Telegram script.');
+    script.onerror = (error) => {
+      setDebugInfo(`Error loading Telegram script: ${error}`);
     };
 
     window.TelegramLoginWidget = {
       dataOnauth: (user) => {
-        setDebugInfo('Received auth data from Telegram. Validating...');
+        setDebugInfo(`Received auth data from Telegram: ${JSON.stringify(user)}`);
         onTelegramAuth(user);
       }
     };
@@ -51,7 +52,7 @@ const Home = () => {
   }, []);
 
   const onTelegramAuth = async (user: any) => {
-    setDebugInfo('Sending auth data to server...');
+    setDebugInfo(`Sending auth data to server: ${JSON.stringify(user)}`);
     try {
       const response = await fetch('/api/auth', {
         method: 'POST',
@@ -61,12 +62,14 @@ const Home = () => {
         body: JSON.stringify(user),
       });
 
+      const responseData = await response.json();
+      setDebugInfo(`Server response: ${JSON.stringify(responseData)}`);
+
       if (response.ok) {
         setDebugInfo('Authentication successful.');
         setIsAuthenticated(true);
       } else {
-        const errorData = await response.json();
-        setDebugInfo(`Authentication failed: ${errorData.error}`);
+        setDebugInfo(`Authentication failed: ${responseData.error}`);
       }
     } catch (error) {
       setDebugInfo(`Error during authentication: ${error}`);
